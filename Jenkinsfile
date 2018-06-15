@@ -83,9 +83,14 @@ pipeline {
             sh 'git submodule update --init --recursive --force'
             sh 'mkdir build; cd build; ${QT_PATH}/${QMAKE_VER} -r ${WORKSPACE}/qgroundcontrol.pro CONFIG+=${QGC_CONFIG} CONFIG+=WarningsAsErrorsOn'
             sh 'cd build; make -j`nproc --all`'
+            sh './deploy/create_linux_appimage.sh ${WORKSPACE} ${WORKSPACE}/build/release ${WORKSPACE}/release/package'
             sh 'ccache -s'
           }
           post {
+            success {
+              archiveArtifacts(artifacts: 'build/**/*.AppImage', fingerprint: true)
+              archiveArtifacts(artifacts: 'build/**/*.tar.bz2', fingerprint: true)
+            }
             cleanup {
               sh 'git clean -ff -x -d .'
             }
